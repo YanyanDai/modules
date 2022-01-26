@@ -10,23 +10,32 @@ int counter = 0;
 bool counterStart = false;
 String receivedString;
 
- // Pin 2, 4 direction; Pin5 PWM
-
-
-
-//const int Forward = 1;
-//const int Backward = 0;
+int myPins[2] = {4,5}; // Pin4 direction; Pin5 PWM
+const int Forward = 0;
+const int Backward = 1;
 
 void moveRobot(int mySpeed, int myTurn, int maxSpeed = 255, int maxTurn=90)
 {
   /*
   *mySpeed and myTurn range from -100 to 100
   *+ val of mySpeed is forward and - is backward
-  *+ val of myTurn is right turn and - is left turn
+  *+val of myTurn is right turn and - is left turn
   */
-
+  mySpeed = constrain(mySpeed, -100, 100);
+  myTurn = constrain(myTurn, -100, 100);
+  mySpeed = map(mySpeed, -100,100,-maxSpeed, maxSpeed);
+  myTurn = map(myTurn, -100,100,45-maxTurn, 45+maxTurn);
+  //mySpeed = constrain(mySpeed, -45, 45);
+  //myTurn = constrain(myTurn, 0, 90);
   
-
+  if (mySpeed >= 0){
+    digitalWrite(myPins[0],Forward);
+   }
+  else{
+    digitalWrite(myPins[0],Backward);
+   }
+  analogWrite(myPins[1],abs(mySpeed));
+  myservoTurn.write(myTurn); 
 }
 
 void receiveData()
@@ -56,10 +65,18 @@ void receiveData()
 }
 
 void setup(){
-
+  for (int i=0; i<2; i++) {
+    pinMode(myPins[i], OUTPUT);
+  }
+  pinMode(13, OUTPUT);
+  Serial.begin(115200) ;
+  myservoTurn.attach(8);
+  moveRobot(0,0);
   
 }
 
 void loop() {
-
+  receiveData();
+  moveRobot(valsRec[0],valsRec[1]);
+  
 }
